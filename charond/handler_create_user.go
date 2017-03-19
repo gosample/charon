@@ -18,6 +18,13 @@ type createUserHandler struct {
 }
 
 func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateUserRequest) (*charonrpc.CreateUserResponse, error) {
+	if len(req.Username) < 3 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "username needs to be at least 3 characters long but got %d", len(req.Username))
+	}
+	if len(req.PlainPassword) < 8 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "password needs to be at least 8 characters long but got %d", len(req.PlainPassword))
+	}
+
 	act, err := cuh.retrieveActor(ctx)
 	if err != nil {
 		if req.IsSuperuser.BoolOr(false) {

@@ -1,5 +1,5 @@
-hash: fa172044f09f3761549e90805f17abe891dc41df4b1f6cf93a5cce29d43a5e8c
-updated: 2017-02-19T21:01:17.312034414+01:00
+hash: 04bb150087771adaa1af973a80159aefd3db84eddd8f771d5c9587085f6b89b7
+updated: 2017-03-19T20:08:56.26482786+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -32,7 +32,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: ba5d4f7a35561e22fbdf7a39aa0070f4d460cfc0
+  version: 4a82388ebc5138c8289fe9bc602cb0b3e32cd617
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 71c876ce335e932ee915e9e963a0568be10b29de
+  version: 883966e3262624c0830747570e2175f93d61bc0e
   subpackages:
   - internal/cluster
   - internal/jump
@@ -72,7 +72,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 3007b6072c17c8d985734e6e19b1dea9174e13d3
+  version: 49fee292b27bfff7f354ee0f64e1bc4850462edf
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -135,7 +135,7 @@ imports:
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: b9bcb1da229a59cc1e1d168401662cb6450aae08
+  version: 0cc212b4ef1943b61e894a7d56490575b3216439
   subpackages:
   - js
 - name: github.com/jtolds/gls

@@ -87,6 +87,20 @@ func newGroupManager(server *rpcServer) *groupManager {
 	}
 }
 
+type refreshTokenManager struct {
+	*createRefreshTokenHandler
+	*listRefreshTokensHandler
+	*disableRefreshTokenHandler
+}
+
+func newRefreshTokenManager(server *rpcServer) *refreshTokenManager {
+	return &refreshTokenManager{
+		createRefreshTokenHandler:  &createRefreshTokenHandler{handler: newHandler(server)},
+		listRefreshTokensHandler:   &listRefreshTokensHandler{handler: newHandler(server)},
+		disableRefreshTokenHandler: &disableRefreshTokenHandler{handler: newHandler(server)},
+	}
+}
+
 func unaryServerInterceptors(interceptors ...grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		wrap := func(current grpc.UnaryServerInterceptor, next grpc.UnaryHandler) grpc.UnaryHandler {

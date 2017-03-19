@@ -186,10 +186,13 @@ func (d *Daemon) Run() (err error) {
 			},
 		},
 	}
+
 	charonrpc.RegisterAuthServer(gRPCServer, newAuth(server))
 	charonrpc.RegisterUserManagerServer(gRPCServer, newUserManager(server))
 	charonrpc.RegisterGroupManagerServer(gRPCServer, newGroupManager(server))
 	charonrpc.RegisterPermissionManagerServer(gRPCServer, newPermissionManager(server))
+	charonrpc.RegisterRefreshTokenManagerServer(gRPCServer, newRefreshTokenManager(server))
+
 	promgrpc.RegisterInterceptor(gRPCServer, interceptor)
 
 	go func() {

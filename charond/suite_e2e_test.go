@@ -24,10 +24,11 @@ type endToEndSuite struct {
 	hasher password.Hasher
 
 	charon struct {
-		auth       charonrpc.AuthClient
-		user       charonrpc.UserManagerClient
-		group      charonrpc.GroupManagerClient
-		permission charonrpc.PermissionManagerClient
+		auth         charonrpc.AuthClient
+		user         charonrpc.UserManagerClient
+		group        charonrpc.GroupManagerClient
+		permission   charonrpc.PermissionManagerClient
+		refreshToken charonrpc.RefreshTokenManagerClient
 	}
 	charonCloser io.Closer
 	charonConn   *grpc.ClientConn
@@ -89,15 +90,17 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	}
 
 	etes.charon = struct {
-		auth       charonrpc.AuthClient
-		user       charonrpc.UserManagerClient
-		group      charonrpc.GroupManagerClient
-		permission charonrpc.PermissionManagerClient
+		auth         charonrpc.AuthClient
+		user         charonrpc.UserManagerClient
+		group        charonrpc.GroupManagerClient
+		permission   charonrpc.PermissionManagerClient
+		refreshToken charonrpc.RefreshTokenManagerClient
 	}{
-		auth:       charonrpc.NewAuthClient(etes.charonConn),
-		user:       charonrpc.NewUserManagerClient(etes.charonConn),
-		group:      charonrpc.NewGroupManagerClient(etes.charonConn),
-		permission: charonrpc.NewPermissionManagerClient(etes.charonConn),
+		auth:         charonrpc.NewAuthClient(etes.charonConn),
+		user:         charonrpc.NewUserManagerClient(etes.charonConn),
+		group:        charonrpc.NewGroupManagerClient(etes.charonConn),
+		permission:   charonrpc.NewPermissionManagerClient(etes.charonConn),
+		refreshToken: charonrpc.NewRefreshTokenManagerClient(etes.charonConn),
 	}
 	etes.mnemosyne = mnemosynerpc.NewSessionManagerClient(etes.mnemosyneConn)
 }

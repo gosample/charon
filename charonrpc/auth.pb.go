@@ -10,6 +10,7 @@ It is generated from these files:
 	user.proto
 	group.proto
 	permission.proto
+	refresh_token.proto
 
 It has these top-level messages:
 	LoginRequest
@@ -56,6 +57,13 @@ It has these top-level messages:
 	ListPermissionsResponse
 	GetPermissionRequest
 	GetPermissionResponse
+	RefreshToken
+	CreateRefreshTokenRequest
+	CreateRefreshTokenResponse
+	ListRefreshTokensRequest
+	ListRefreshTokensResponse
+	DisableRefreshTokenRequest
+	DisableRefreshTokenResponse
 */
 package charonrpc
 

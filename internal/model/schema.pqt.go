@@ -8945,6 +8945,1563 @@ func (r *UserPermissionsRepositoryBase) Count(ctx context.Context, c *UserPermis
 }
 
 const (
+	TableRefreshToken                              = "charon.refresh_token"
+	TableRefreshTokenColumnCreatedAt               = "created_at"
+	TableRefreshTokenColumnCreatedBy               = "created_by"
+	TableRefreshTokenColumnDisabled                = "disabled"
+	TableRefreshTokenColumnExpireAt                = "expire_at"
+	TableRefreshTokenColumnLastUsedAt              = "last_used_at"
+	TableRefreshTokenColumnNotes                   = "notes"
+	TableRefreshTokenColumnToken                   = "token"
+	TableRefreshTokenColumnUpdatedAt               = "updated_at"
+	TableRefreshTokenColumnUpdatedBy               = "updated_by"
+	TableRefreshTokenColumnUserID                  = "user_id"
+	TableRefreshTokenConstraintCreatedByForeignKey = "charon.refresh_token_created_by_fkey"
+
+	TableRefreshTokenConstraintUpdatedByForeignKey = "charon.refresh_token_updated_by_fkey"
+
+	TableRefreshTokenConstraintUserIDForeignKey = "charon.refresh_token_user_id_fkey"
+
+	TableRefreshTokenConstraintTokenUserIDUnique = "public.refresh_token_token_user_id_key"
+)
+
+var (
+	TableRefreshTokenColumns = []string{
+		TableRefreshTokenColumnCreatedAt,
+		TableRefreshTokenColumnCreatedBy,
+		TableRefreshTokenColumnDisabled,
+		TableRefreshTokenColumnExpireAt,
+		TableRefreshTokenColumnLastUsedAt,
+		TableRefreshTokenColumnNotes,
+		TableRefreshTokenColumnToken,
+		TableRefreshTokenColumnUpdatedAt,
+		TableRefreshTokenColumnUpdatedBy,
+		TableRefreshTokenColumnUserID,
+	}
+)
+
+// RefreshTokenEntity ...
+type RefreshTokenEntity struct {
+	// CreatedAt ...
+	CreatedAt time.Time
+	// CreatedBy ...
+	CreatedBy ntypes.Int64
+	// Disabled ...
+	Disabled bool
+	// ExpireAt ...
+	ExpireAt pq.NullTime
+	// LastUsedAt ...
+	LastUsedAt pq.NullTime
+	// Notes ...
+	Notes ntypes.String
+	// Token ...
+	Token string
+	// UpdatedAt ...
+	UpdatedAt pq.NullTime
+	// UpdatedBy ...
+	UpdatedBy ntypes.Int64
+	// UserID ...
+	UserID int64
+	// User ...
+	User *UserEntity
+	// Author ...
+	Author *UserEntity
+	// Modifier ...
+	Modifier *UserEntity
+}
+
+func (e *RefreshTokenEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+
+	case TableRefreshTokenColumnCreatedAt:
+		return &e.CreatedAt, true
+	case TableRefreshTokenColumnCreatedBy:
+		return &e.CreatedBy, true
+	case TableRefreshTokenColumnDisabled:
+		return &e.Disabled, true
+	case TableRefreshTokenColumnExpireAt:
+		return &e.ExpireAt, true
+	case TableRefreshTokenColumnLastUsedAt:
+		return &e.LastUsedAt, true
+	case TableRefreshTokenColumnNotes:
+		return &e.Notes, true
+	case TableRefreshTokenColumnToken:
+		return &e.Token, true
+	case TableRefreshTokenColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	case TableRefreshTokenColumnUpdatedBy:
+		return &e.UpdatedBy, true
+	case TableRefreshTokenColumnUserID:
+		return &e.UserID, true
+	default:
+		return nil, false
+	}
+}
+
+func (e *RefreshTokenEntity) Props(cns ...string) ([]interface{}, error) {
+	if len(cns) == 0 {
+		cns = TableRefreshTokenColumns
+	}
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// RefreshTokenIterator is not thread safe.
+type RefreshTokenIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *RefreshTokenIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *RefreshTokenIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *RefreshTokenIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache output inside iterator.
+func (i *RefreshTokenIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper around RefreshToken method that makes iterator more generic.
+func (i *RefreshTokenIterator) Ent() (interface{}, error) {
+	return i.RefreshToken()
+}
+
+func (i *RefreshTokenIterator) RefreshToken() (*RefreshTokenEntity, error) {
+	var ent RefreshTokenEntity
+	cols, err := i.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
+type RefreshTokenCriteria struct {
+	CreatedAt  *qtypes.Timestamp
+	CreatedBy  *qtypes.Int64
+	Disabled   ntypes.Bool
+	ExpireAt   *qtypes.Timestamp
+	LastUsedAt *qtypes.Timestamp
+	Notes      *qtypes.String
+	Token      *qtypes.String
+	UpdatedAt  *qtypes.Timestamp
+	UpdatedBy  *qtypes.Int64
+	UserID     *qtypes.Int64
+}
+
+type RefreshTokenFindExpr struct {
+	Where         *RefreshTokenCriteria
+	Offset, Limit int64
+	Columns       []string
+	OrderBy       map[string]bool
+	JoinUser      *UserJoin
+	JoinAuthor    *UserJoin
+	JoinModifier  *UserJoin
+}
+
+type RefreshTokenCountExpr struct {
+	Where        *RefreshTokenCriteria
+	JoinUser     *UserJoin
+	JoinAuthor   *UserJoin
+	JoinModifier *UserJoin
+}
+
+type RefreshTokenJoin struct {
+	On, Where    *RefreshTokenCriteria
+	Fetch        bool
+	Kind         JoinType
+	JoinUser     *UserJoin
+	JoinAuthor   *UserJoin
+	JoinModifier *UserJoin
+}
+
+type RefreshTokenPatch struct {
+	CreatedAt  pq.NullTime
+	CreatedBy  ntypes.Int64
+	Disabled   ntypes.Bool
+	ExpireAt   pq.NullTime
+	LastUsedAt pq.NullTime
+	Notes      ntypes.String
+	Token      ntypes.String
+	UpdatedAt  pq.NullTime
+	UpdatedBy  ntypes.Int64
+	UserID     ntypes.Int64
+}
+
+func ScanRefreshTokenRows(rows *sql.Rows) (entities []*RefreshTokenEntity, err error) {
+	for rows.Next() {
+		var ent RefreshTokenEntity
+		err = rows.Scan(&ent.CreatedAt,
+			&ent.CreatedBy,
+			&ent.Disabled,
+			&ent.ExpireAt,
+			&ent.LastUsedAt,
+			&ent.Notes,
+			&ent.Token,
+			&ent.UpdatedAt,
+			&ent.UpdatedBy,
+			&ent.UserID,
+		)
+		if err != nil {
+			return
+		}
+
+		entities = append(entities, &ent)
+	}
+	if err = rows.Err(); err != nil {
+		return
+	}
+
+	return
+}
+
+type RefreshTokenRepositoryBase struct {
+	Table   string
+	Columns []string
+	DB      *sql.DB
+	Debug   bool
+	Log     log.Logger
+}
+
+func (r *RefreshTokenRepositoryBase) InsertQuery(e *RefreshTokenEntity) (string, []interface{}, error) {
+	insert := NewComposer(10)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := insert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.CreatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnDisabled); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.Disabled)
+	insert.Dirty = true
+
+	if e.ExpireAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnExpireAt); err != nil {
+			return "", nil, err
+		}
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := insert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		insert.Add(e.ExpireAt)
+		insert.Dirty = true
+	}
+
+	if e.LastUsedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnLastUsedAt); err != nil {
+			return "", nil, err
+		}
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := insert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		insert.Add(e.LastUsedAt)
+		insert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnNotes); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.Notes)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnToken); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.Token)
+	insert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := insert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.UpdatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnUserID); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.UserID)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(insert)
+		buf.WriteString(") ")
+		buf.WriteString("RETURNING ")
+		if len(r.Columns) > 0 {
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		} else {
+			buf.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+		}
+	}
+	return buf.String(), insert.Args(), nil
+}
+func (r *RefreshTokenRepositoryBase) Insert(ctx context.Context, e *RefreshTokenEntity) (*RefreshTokenEntity, error) {
+	query, args, err := r.InsertQuery(e)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.CreatedAt,
+		&e.CreatedBy,
+		&e.Disabled,
+		&e.ExpireAt,
+		&e.LastUsedAt,
+		&e.Notes,
+		&e.Token,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.UserID,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
+func RefreshTokenCriteriaWhereClause(comp *Composer, c *RefreshTokenCriteria, id int) error {
+	QueryTimestampWhereClause(c.CreatedAt, id, TableRefreshTokenColumnCreatedAt, comp, And)
+
+	QueryInt64WhereClause(c.CreatedBy, id, TableRefreshTokenColumnCreatedBy, comp, And)
+
+	if c.Disabled.Valid {
+		if comp.Dirty {
+			if _, err := comp.WriteString(", "); err != nil {
+				return err
+			}
+		}
+		if err := comp.WriteAlias(id); err != nil {
+			return err
+		}
+		if _, err := comp.WriteString(TableRefreshTokenColumnDisabled); err != nil {
+			return err
+		}
+		if _, err := comp.WriteString("="); err != nil {
+			return err
+		}
+		if err := comp.WritePlaceholder(); err != nil {
+			return err
+		}
+		comp.Add(c.Disabled)
+		comp.Dirty = true
+	}
+
+	QueryTimestampWhereClause(c.ExpireAt, id, TableRefreshTokenColumnExpireAt, comp, And)
+
+	QueryTimestampWhereClause(c.LastUsedAt, id, TableRefreshTokenColumnLastUsedAt, comp, And)
+
+	QueryStringWhereClause(c.Notes, id, TableRefreshTokenColumnNotes, comp, And)
+
+	QueryStringWhereClause(c.Token, id, TableRefreshTokenColumnToken, comp, And)
+
+	QueryTimestampWhereClause(c.UpdatedAt, id, TableRefreshTokenColumnUpdatedAt, comp, And)
+
+	QueryInt64WhereClause(c.UpdatedBy, id, TableRefreshTokenColumnUpdatedBy, comp, And)
+
+	QueryInt64WhereClause(c.UserID, id, TableRefreshTokenColumnUserID, comp, And)
+
+	return nil
+}
+
+func (r *RefreshTokenRepositoryBase) FindQuery(fe *RefreshTokenFindExpr) (string, []interface{}, error) {
+	comp := NewComposer(10)
+	buf := bytes.NewBufferString("SELECT ")
+	if len(fe.Columns) == 0 {
+		buf.WriteString("t0.created_at, t0.created_by, t0.disabled, t0.expire_at, t0.last_used_at, t0.notes, t0.token, t0.updated_at, t0.updated_by, t0.user_id")
+	} else {
+		buf.WriteString(strings.Join(fe.Columns, ", "))
+	}
+	if fe.JoinUser != nil && fe.JoinUser.Fetch {
+		buf.WriteString(", t1.confirmation_token, t1.created_at, t1.created_by, t1.first_name, t1.id, t1.is_active, t1.is_confirmed, t1.is_staff, t1.is_superuser, t1.last_login_at, t1.last_name, t1.password, t1.updated_at, t1.updated_by, t1.username")
+	}
+
+	if fe.JoinAuthor != nil && fe.JoinAuthor.Fetch {
+		buf.WriteString(", t2.confirmation_token, t2.created_at, t2.created_by, t2.first_name, t2.id, t2.is_active, t2.is_confirmed, t2.is_staff, t2.is_superuser, t2.last_login_at, t2.last_name, t2.password, t2.updated_at, t2.updated_by, t2.username")
+	}
+
+	if fe.JoinModifier != nil && fe.JoinModifier.Fetch {
+		buf.WriteString(", t3.confirmation_token, t3.created_at, t3.created_by, t3.first_name, t3.id, t3.is_active, t3.is_confirmed, t3.is_staff, t3.is_superuser, t3.last_login_at, t3.last_name, t3.password, t3.updated_at, t3.updated_by, t3.username")
+	}
+
+	buf.WriteString(" FROM ")
+	buf.WriteString(r.Table)
+	buf.WriteString(" AS t0")
+	if fe.JoinUser != nil {
+		joinClause(comp, fe.JoinUser.Kind, "charon.user AS t1 ON t0.user_id=t1.id")
+		if fe.JoinUser.On != nil {
+			comp.Dirty = true
+			if err := UserCriteriaWhereClause(comp, fe.JoinUser.On, 1); err != nil {
+				return "", nil, err
+			}
+		}
+	}
+
+	if fe.JoinAuthor != nil {
+		joinClause(comp, fe.JoinAuthor.Kind, "charon.user AS t2 ON t0.created_by=t2.id")
+		if fe.JoinAuthor.On != nil {
+			comp.Dirty = true
+			if err := UserCriteriaWhereClause(comp, fe.JoinAuthor.On, 2); err != nil {
+				return "", nil, err
+			}
+		}
+	}
+
+	if fe.JoinModifier != nil {
+		joinClause(comp, fe.JoinModifier.Kind, "charon.user AS t3 ON t0.updated_by=t3.id")
+		if fe.JoinModifier.On != nil {
+			comp.Dirty = true
+			if err := UserCriteriaWhereClause(comp, fe.JoinModifier.On, 3); err != nil {
+				return "", nil, err
+			}
+		}
+	}
+
+	if comp.Dirty {
+		buf.ReadFrom(comp)
+		comp.Dirty = false
+	}
+	if fe.Where != nil {
+		if err := RefreshTokenCriteriaWhereClause(comp, fe.Where, 0); err != nil {
+			return "", nil, err
+		}
+	}
+	if fe.JoinUser != nil && fe.JoinUser.Where != nil {
+		if err := UserCriteriaWhereClause(comp, fe.JoinUser.Where, 1); err != nil {
+			return "", nil, err
+		}
+	}
+	if fe.JoinAuthor != nil && fe.JoinAuthor.Where != nil {
+		if err := UserCriteriaWhereClause(comp, fe.JoinAuthor.Where, 2); err != nil {
+			return "", nil, err
+		}
+	}
+	if fe.JoinModifier != nil && fe.JoinModifier.Where != nil {
+		if err := UserCriteriaWhereClause(comp, fe.JoinModifier.Where, 3); err != nil {
+			return "", nil, err
+		}
+	}
+	if comp.Dirty {
+		//fmt.Println("comp", comp.String())
+		//fmt.Println("buf", buf.String())
+		if _, err := buf.WriteString(" WHERE "); err != nil {
+			return "", nil, err
+		}
+		buf.ReadFrom(comp)
+		//fmt.Println("comp - after", comp.String())
+		//fmt.Println("buf - after", buf.String())
+	}
+
+	if len(fe.OrderBy) > 0 {
+		i := 0
+		comp.WriteString(" ORDER BY ")
+
+		for cn, asc := range fe.OrderBy {
+			for _, tcn := range TableRefreshTokenColumns {
+				if cn == tcn {
+					if i > 0 {
+						if _, err := comp.WriteString(", "); err != nil {
+							return "", nil, err
+						}
+					}
+					if _, err := comp.WriteString(cn); err != nil {
+						return "", nil, err
+					}
+					if !asc {
+						if _, err := comp.WriteString(" DESC "); err != nil {
+							return "", nil, err
+						}
+					}
+					i++
+					break
+				}
+			}
+		}
+	}
+	if fe.Offset > 0 {
+		if _, err := comp.WriteString(" OFFSET "); err != nil {
+			return "", nil, err
+		}
+		if err := comp.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		if _, err := comp.WriteString(" "); err != nil {
+			return "", nil, err
+		}
+		comp.Add(fe.Offset)
+	}
+	if fe.Limit > 0 {
+		if _, err := comp.WriteString(" LIMIT "); err != nil {
+			return "", nil, err
+		}
+		if err := comp.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		if _, err := comp.WriteString(" "); err != nil {
+			return "", nil, err
+		}
+		comp.Add(fe.Limit)
+	}
+
+	buf.ReadFrom(comp)
+
+	return buf.String(), comp.Args(), nil
+}
+
+func (r *RefreshTokenRepositoryBase) Find(ctx context.Context, fe *RefreshTokenFindExpr) ([]*RefreshTokenEntity, error) {
+	query, args, err := r.FindQuery(fe)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
+	}
+
+	var entities []*RefreshTokenEntity
+	var props []interface{}
+	for rows.Next() {
+		var ent RefreshTokenEntity
+		if props, err = ent.Props(); err != nil {
+			return nil, err
+		}
+		var prop []interface{}
+		if fe.JoinUser != nil && fe.JoinUser.Fetch {
+			ent.User = &UserEntity{}
+			if prop, err = ent.User.Props(); err != nil {
+				return nil, err
+			}
+			props = append(props, prop...)
+		}
+		if fe.JoinAuthor != nil && fe.JoinAuthor.Fetch {
+			ent.Author = &UserEntity{}
+			if prop, err = ent.Author.Props(); err != nil {
+				return nil, err
+			}
+			props = append(props, prop...)
+		}
+		if fe.JoinModifier != nil && fe.JoinModifier.Fetch {
+			ent.Modifier = &UserEntity{}
+			if prop, err = ent.Modifier.Props(); err != nil {
+				return nil, err
+			}
+			props = append(props, prop...)
+		}
+		err = rows.Scan(props...)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if err = rows.Err(); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
+	}
+	return entities, nil
+}
+
+func (r *RefreshTokenRepositoryBase) FindIter(ctx context.Context, fe *RefreshTokenFindExpr) (*RefreshTokenIterator, error) {
+	query, args, err := r.FindQuery(fe)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &RefreshTokenIterator{
+		rows: rows,
+		cols: []string{"created_at", "created_by", "disabled", "expire_at", "last_used_at", "notes", "token", "updated_at", "updated_by", "user_id"},
+	}, nil
+}
+func (r *RefreshTokenRepositoryBase) FindOneByTokenAndUserID(ctx context.Context, refreshTokenToken string, refreshTokenUserID int64) (*RefreshTokenEntity, error) {
+	find := NewComposer(10)
+	find.WriteString("SELECT ")
+	if len(r.Columns) == 0 {
+		find.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+	} else {
+		find.WriteString(strings.Join(r.Columns, ", "))
+	}
+	find.WriteString(" FROM ")
+	find.WriteString(TableRefreshToken)
+	find.WriteString(" WHERE ")
+	find.WriteString(TableRefreshTokenColumnToken)
+	find.WriteString("=")
+	find.WritePlaceholder()
+	find.Add(refreshTokenToken)
+	find.WriteString(" AND ")
+	find.WriteString(TableRefreshTokenColumnUserID)
+	find.WriteString("=")
+	find.WritePlaceholder()
+	find.Add(refreshTokenUserID)
+
+	var (
+		ent RefreshTokenEntity
+	)
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, find.String(), find.Args()...).Scan(props...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ent, nil
+}
+func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserIDQuery(refreshTokenToken string, refreshTokenUserID int64, p *RefreshTokenPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(2)
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnCreatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedBy)
+		update.Dirty = true
+	}
+
+	if p.Disabled.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnDisabled); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Disabled)
+		update.Dirty = true
+	}
+
+	if p.ExpireAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnExpireAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.ExpireAt)
+		update.Dirty = true
+
+	}
+
+	if p.LastUsedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnLastUsedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.LastUsedAt)
+		update.Dirty = true
+
+	}
+
+	if p.Notes.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnNotes); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Notes)
+		update.Dirty = true
+	}
+
+	if p.Token.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnToken); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Token)
+		update.Dirty = true
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+		update.Dirty = true
+	}
+
+	if p.UpdatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnUpdatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedBy)
+		update.Dirty = true
+	}
+
+	if p.UserID.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnUserID); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UserID)
+		update.Dirty = true
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("RefreshToken update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TableRefreshTokenColumnToken)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(refreshTokenToken)
+	update.WriteString(" AND ")
+	update.WriteString(TableRefreshTokenColumnUserID)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(refreshTokenUserID)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	if len(r.Columns) > 0 {
+		buf.WriteString(strings.Join(r.Columns, ", "))
+	} else {
+		buf.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+	}
+	return buf.String(), update.Args(), nil
+}
+func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserID(ctx context.Context, refreshTokenToken string, refreshTokenUserID int64, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
+	query, args, err := r.UpdateOneByTokenAndUserIDQuery(refreshTokenToken, refreshTokenUserID, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent RefreshTokenEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *RefreshTokenPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(20)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.CreatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnDisabled); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Disabled)
+	upsert.Dirty = true
+
+	if e.ExpireAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnExpireAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.ExpireAt)
+		upsert.Dirty = true
+	}
+
+	if e.LastUsedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnLastUsedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.LastUsedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnNotes); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Notes)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnToken); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Token)
+	upsert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableRefreshTokenColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UpdatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnUserID); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UserID)
+	upsert.Dirty = true
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnCreatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.Disabled.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnDisabled); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Disabled)
+			upsert.Dirty = true
+		}
+
+		if p.ExpireAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnExpireAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.ExpireAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.LastUsedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnLastUsedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.LastUsedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.Notes.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnNotes); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Notes)
+			upsert.Dirty = true
+		}
+
+		if p.Token.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnToken); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Token)
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnUpdatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.UserID.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnUserID); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UserID)
+			upsert.Dirty = true
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		buf.WriteString(" RETURNING ")
+		if len(r.Columns) > 0 {
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		} else {
+			buf.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *RefreshTokenRepositoryBase) Upsert(ctx context.Context, e *RefreshTokenEntity, p *RefreshTokenPatch, inf ...string) (*RefreshTokenEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.CreatedAt,
+		&e.CreatedBy,
+		&e.Disabled,
+		&e.ExpireAt,
+		&e.LastUsedAt,
+		&e.Notes,
+		&e.Token,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.UserID,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
+func (r *RefreshTokenRepositoryBase) Count(ctx context.Context, c *RefreshTokenCountExpr) (int64, error) {
+	query, args, err := r.FindQuery(&RefreshTokenFindExpr{
+		Where:   c.Where,
+		Columns: []string{"COUNT(*)"},
+
+		JoinUser:     c.JoinUser,
+		JoinAuthor:   c.JoinAuthor,
+		JoinModifier: c.JoinModifier,
+	})
+	if err != nil {
+		return 0, err
+	}
+	var count int64
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return 0, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
+	}
+
+	return count, nil
+}
+
+const (
 	JoinDoNot = iota
 	JoinInner
 	JoinLeft
@@ -11011,6 +12568,24 @@ CREATE TABLE IF NOT EXISTS charon.user_permissions (
 	CONSTRAINT "charon.user_permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_permissions_subsystem_module_action_fkey" FOREIGN KEY (permission_subsystem, permission_module, permission_action) REFERENCES charon.permission (subsystem, module, action),
 	CONSTRAINT "charon.user_permissions_user_id_subsystem_module_action_key" UNIQUE (user_id, permission_subsystem, permission_module, permission_action)
+);
+
+CREATE TABLE IF NOT EXISTS charon.refresh_token (
+	created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+	created_by BIGINT,
+	disabled BOOL DEFAULT false NOT NULL,
+	expire_at TIMESTAMPTZ,
+	last_used_at TIMESTAMPTZ,
+	notes TEXT,
+	token TEXT NOT NULL,
+	updated_at TIMESTAMPTZ,
+	updated_by BIGINT,
+	user_id BIGINT NOT NULL,
+
+	CONSTRAINT "charon.refresh_token_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
+	CONSTRAINT "charon.refresh_token_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),
+	CONSTRAINT "charon.refresh_token_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charon.user (id),
+	CONSTRAINT "public.refresh_token_token_user_id_key" UNIQUE (token, user_id)
 );
 
 `

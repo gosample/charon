@@ -50,6 +50,14 @@ const (
 	GroupPermissionCanDelete   Permission = "charon:group_permission:can delete"
 	GroupPermissionCanModify   Permission = "charon:group_permission:can modify"
 	GroupPermissionCanRetrieve Permission = "charon:group_permission:can retrieve"
+
+	RefreshTokenCanCreate             Permission = "charon:refresh-token:can create"
+	RefreshTokenCanDisableAsStranger  Permission = "charon:refresh-token:can disable as stranger"
+	RefreshTokenCanDisableAsOwner     Permission = "charon:refresh-token:can disable as owner"
+	RefreshTokenCanModifyAsStranger   Permission = "charon:refresh-token:can modify as stranger"
+	RefreshTokenCanModifyAsOwner      Permission = "charon:refresh-token:can modify as owner"
+	RefreshTokenCanRetrieveAsOwner    Permission = "charon:refresh-token:can retrieve as owner"
+	RefreshTokenCanRetrieveAsStranger Permission = "charon:refresh-token:can retrieve as stranger"
 )
 
 var (
@@ -85,6 +93,14 @@ var (
 		GroupPermissionCanDelete,
 		GroupPermissionCanModify,
 		GroupPermissionCanRetrieve,
+		// RefreshToken
+		RefreshTokenCanCreate,
+		RefreshTokenCanDisableAsStranger,
+		RefreshTokenCanDisableAsOwner,
+		RefreshTokenCanModifyAsStranger,
+		RefreshTokenCanModifyAsOwner,
+		RefreshTokenCanRetrieveAsOwner,
+		RefreshTokenCanRetrieveAsStranger,
 	}
 )
 

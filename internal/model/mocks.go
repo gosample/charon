@@ -455,6 +455,102 @@ func (_m *MockPermissionRegistry) Register(ctx context.Context, permissions char
 	return r0, r1, r2, r3
 }
 
+type MockRefreshTokenProvider struct {
+	mock.Mock
+}
+
+// Find provides a mock function with given fields: _a0, _a1
+func (_m *MockRefreshTokenProvider) Find(_a0 context.Context, _a1 *RefreshTokenFindExpr) ([]*RefreshTokenEntity, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 []*RefreshTokenEntity
+	if rf, ok := ret.Get(0).(func(context.Context, *RefreshTokenFindExpr) []*RefreshTokenEntity); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*RefreshTokenEntity)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *RefreshTokenFindExpr) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindOneByTokenAndUserID provides a mock function with given fields: _a0, _a1, _a2
+func (_m *MockRefreshTokenProvider) FindOneByTokenAndUserID(_a0 context.Context, _a1 string, _a2 int64) (*RefreshTokenEntity, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *RefreshTokenEntity
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64) *RefreshTokenEntity); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*RefreshTokenEntity)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Create provides a mock function with given fields: _a0, _a1
+func (_m *MockRefreshTokenProvider) Create(_a0 context.Context, _a1 *RefreshTokenEntity) (*RefreshTokenEntity, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *RefreshTokenEntity
+	if rf, ok := ret.Get(0).(func(context.Context, *RefreshTokenEntity) *RefreshTokenEntity); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*RefreshTokenEntity)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *RefreshTokenEntity) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateOneByTokenAndUserID provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *MockRefreshTokenProvider) UpdateOneByTokenAndUserID(_a0 context.Context, _a1 string, _a2 int64, _a3 *RefreshTokenPatch) (*RefreshTokenEntity, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 *RefreshTokenEntity
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, *RefreshTokenPatch) *RefreshTokenEntity); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*RefreshTokenEntity)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64, *RefreshTokenPatch) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type MockCompositionWriter struct {
 	mock.Mock
 }
